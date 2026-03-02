@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#071510">
+<title>Portal do Morador — Ouro Verde</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#0D1F15;--surface:#112418;--surface2:#162D1C;--border:#1E3D28;--green:#3FAD6B;--green2:#2D8653;--text:#E8F0EB;--txm:#7EA88E}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100dvh}
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100dvh;background:linear-gradient(135deg,#071510 0%,#0f2b1a 50%,#071510 100%);padding:1.5rem}
+.lcard{background:rgba(255,255,255,.04);border:1px solid rgba(63,173,107,.18);border-radius:16px;padding:2.5rem 2rem;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.llogo{text-align:center;margin-bottom:2rem}
+.lemblem{width:64px;height:64px;background:linear-gradient(135deg,#1A6B3A,#3FAD6B);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto .75rem}
+.lemblem svg{width:32px;height:32px;stroke:#fff;fill:none;stroke-width:2}
+.llogo h1{font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:#A8D5B5;font-weight:700}
+.llogo p{font-size:.82rem;color:var(--txm);margin-top:.2rem}
+.fg{margin-bottom:1rem}
+.fg label{display:block;font-size:.75rem;color:var(--txm);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.5px}
+.fg input{width:100%;padding:.8rem 1rem;background:rgba(255,255,255,.06);border:1px solid rgba(63,173,107,.25);color:var(--text);border-radius:8px;font-family:'Outfit',sans-serif;font-size:.9rem;outline:none}
+.fg input:focus{border-color:var(--green)}
+.pwrap{position:relative}.pwrap input{padding-right:2.8rem}
+.peye{position:absolute;right:.7rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--txm);font-size:1.1rem;padding:.2rem}
+.btnp{width:100%;padding:.9rem;background:linear-gradient(135deg,#1A6B3A,#2D8653);color:#fff;border:none;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.95rem;font-weight:600;cursor:pointer;margin-top:.5rem}
+.btnp:disabled{opacity:.5;cursor:not-allowed}
+.errmsg{color:#E74C3C;font-size:.8rem;margin-top:.6rem;min-height:1rem;text-align:center}
+.remrow{display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:#888;margin:.6rem 0;cursor:pointer}
+.remrow input{accent-color:var(--green)}
+#app{display:none;flex-direction:column;min-height:100dvh}
+.apphdr{background:var(--surface);border-bottom:1px solid var(--border);padding:.85rem 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.alogo{display:flex;align-items:center;gap:.6rem}
+.aicon{width:34px;height:34px;background:linear-gradient(135deg,#1A6B3A,#3FAD6B);border-radius:50%;display:flex;align-items:center;justify-content:center}
+.aicon svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:2}
+.atxt{font-size:.72rem;color:var(--txm);line-height:1.3}
+.atxt strong{display:block;color:var(--text);font-size:.82rem}
+.uinfo{display:flex;align-items:center;gap:.6rem}
+.avatar{width:36px;height:36px;background:var(--green2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;color:#fff}
+.udet{text-align:right}
+.udet .uname{font-size:.82rem;font-weight:600;color:var(--text)}
+.udet .uapto{font-size:.72rem;color:var(--txm)}
+.btnsair{background:none;border:1px solid var(--border);color:var(--txm);padding:.3rem .7rem;border-radius:6px;cursor:pointer;font-size:.75rem;font-family:'Outfit',sans-serif}
+.tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface)}
+.tabbtn{flex:1;padding:.85rem 1rem;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;font-family:'Outfit',sans-serif;font-size:.82rem;color:var(--txm);font-weight:500;transition:all .2s;letter-spacing:.5px;text-transform:uppercase}
+.tabbtn.active{color:var(--green);border-bottom-color:var(--green)}
+.tabcnt{display:none;flex:1;padding:1.25rem}
+.tabcnt.active{display:block}
+.filterbar{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:.9rem;margin-bottom:1rem}
+.filterbar label{font-size:.7rem;color:var(--txm);display:block;margin-bottom:.25rem;text-transform:uppercase;letter-spacing:.3px}
+.filterbar select{width:100%;padding:.6rem .75rem;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:6px;font-family:'Outfit',sans-serif;font-size:.82rem;outline:none}
+.fbtns{grid-column:1/-1;display:flex;gap:.4rem}
+.btnfil{flex:2;padding:.55rem;background:var(--green2);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.82rem;font-family:'Outfit',sans-serif;font-weight:600}
+.btnlim{flex:1;padding:.55rem;background:none;border:1px solid var(--border);color:var(--txm);border-radius:6px;cursor:pointer;font-size:.82rem;font-family:'Outfit',sans-serif}
+.rcount{font-size:.72rem;color:var(--txm);margin-bottom:.6rem}
+.rcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.75rem;border-left:3px solid var(--green)}
+.rchead{display:flex;justify-content:space-between;align-items:center;margin-bottom:.7rem}
+.rcper{font-weight:700;font-size:.95rem;color:var(--text)}
+.rcst{font-size:.72rem;font-weight:600;padding:.2rem .5rem;border-radius:20px;background:rgba(63,173,107,.15);color:var(--green)}
+.rcfields{display:grid;grid-template-columns:1fr 1fr;gap:.4rem .8rem;margin-bottom:.8rem}
+.rcf label{font-size:.68rem;color:var(--txm);text-transform:uppercase;letter-spacing:.3px;display:block}
+.rcf .v{font-size:.88rem;color:var(--text);font-weight:500}
+.rcf .vval{color:#4BC47A;font-weight:700;font-size:1rem}
+.rcacts{display:flex;gap:.5rem}
+.btnver{flex:1;padding:.55rem;background:none;border:1px solid var(--border);color:var(--txm);border-radius:6px;cursor:pointer;font-size:.82rem;font-family:'Outfit',sans-serif}
+.btnver:hover{border-color:var(--green);color:var(--green)}
+.btnbx{flex:1;padding:.55rem;background:var(--green2);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.82rem;font-family:'Outfit',sans-serif;font-weight:600}
+.empty{text-align:center;padding:3rem 1rem;color:var(--txm);background:var(--surface);border-radius:10px;border:1px solid var(--border)}
+.empty .ei{font-size:2.5rem;margin-bottom:.75rem}
+.empty p{font-size:.88rem;line-height:1.6}
+.loading{text-align:center;padding:2rem;color:var(--txm);font-size:.88rem}
+.avcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:1rem;margin-bottom:.75rem}
+.avhead{display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem}
+.avtipo{font-size:.72rem;font-weight:600;padding:.2rem .6rem;border-radius:20px;text-transform:uppercase;letter-spacing:.5px}
+.av-urgente{background:rgba(231,76,60,.15);color:#E74C3C}
+.av-importante{background:rgba(241,196,15,.15);color:#F1C40F}
+.av-informativo{background:rgba(63,173,107,.15);color:var(--green)}
+.av-lembrete{background:rgba(52,152,219,.15);color:#3498DB}
+.avtit{font-weight:600;font-size:.92rem;color:var(--text);flex:1}
+.avbody{font-size:.84rem;color:var(--txm);line-height:1.6;margin-bottom:.5rem}
+.avfoot{font-size:.7rem;color:rgba(126,168,142,.5)}
+.movl{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center;padding:1rem}
+.movl.open{display:flex}
+.modal{background:#fff;border-radius:12px;width:100%;max-width:480px;max-height:90dvh;overflow-y:auto;position:relative}
+.mclose{position:absolute;top:.75rem;right:.75rem;background:none;border:none;font-size:1.2rem;cursor:pointer;color:#555;z-index:1}
+.mbody{padding:1.25rem}
+.fmtrow{display:flex;gap:.5rem;margin-bottom:1rem}
+.fmtbtn{flex:1;padding:.5rem;border:1px solid #ddd;background:#fff;border-radius:6px;cursor:pointer;font-size:.82rem;font-family:'Outfit',sans-serif}
+.fmtbtn.active{background:#2D8653;color:#fff;border-color:#2D8653}
+.macts{display:flex;gap:.5rem;margin-top:1rem}
+.btndl{flex:1;padding:.7rem;background:#2D8653;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.88rem;font-family:'Outfit',sans-serif;font-weight:600}
+.btncan{padding:.7rem 1rem;background:none;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-size:.88rem;font-family:'Outfit',sans-serif;color:#555}
+.rp{background:#fff;color:#071510;padding:1.5rem;font-family:'Outfit',sans-serif;border-radius:4px}
+.rphdr{text-align:center;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:2px solid #1A6B3A}
+.rphdr h2{font-family:'Cormorant Garamond',serif;font-size:1.4rem;color:#071510}
+.rphdr p{font-size:.75rem;color:#555;margin-top:.2rem}
+.rprow{display:flex;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid #eef5f1;font-size:.82rem}
+.rprow .lb{color:#555;font-weight:500}
+.rprow .vl{color:#071510;font-weight:600;text-align:right}
+.rpval{background:#f0faf4;border-radius:6px;padding:.75rem 1rem;margin:.75rem 0;display:flex;justify-content:space-between;align-items:center}
+.rpval .lb{color:#1A6B3A;font-weight:600;font-size:.9rem}
+.rpval .vl{color:#1A6B3A;font-weight:700;font-size:1.2rem}
+.rpfoot{text-align:center;margin-top:1rem;padding-top:.75rem;border-top:1px solid #eee;font-size:.78rem;color:#555;line-height:1.6}
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#2D8653;color:#fff;padding:.65rem 1.25rem;border-radius:8px;font-size:.85rem;z-index:9999;white-space:nowrap;animation:fdin .3s}
+.toast.err{background:#C0392B}
+@keyframes fdin{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@media(max-width:480px){.lcard{padding:1.75rem 1.25rem}.tabcnt{padding:.9rem}.rcfields{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="lcard">
+    <div class="llogo">
+      <div class="lemblem">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      </div>
+      <h1>Ouro Verde</h1>
+      <p>Portal do Morador</p>
+    </div>
+    <div class="fg">
+      <label>Número do Apartamento</label>
+      <input type="text" id="inp-apto" placeholder="Ex: 101" autocomplete="username"
+        onkeydown="if(event.key==='Enter')document.getElementById('inp-senha').focus()">
+    </div>
+    <div class="fg">
+      <label>Senha</label>
+      <div class="pwrap">
+        <input type="password" id="inp-senha" placeholder="Sua senha" autocomplete="current-password"
+          style="width:100%;padding-right:2.8rem"
+          onkeydown="if(event.key==='Enter')fazerLogin()">
+        <button class="peye" type="button" onclick="toggleSenha()">👁</button>
+      </div>
+    </div>
+    <label class="remrow"><input type="checkbox" id="lembrar"> Manter conectado</label>
+    <button class="btnp" id="btn-login" onclick="fazerLogin()">Acessar Minha Conta</button>
+    <div class="errmsg" id="errmsg"></div>
+    <div style="font-size:.7rem;color:rgba(126,168,142,.35);text-align:center;margin-top:.75rem">🔒 Acesso exclusivo para moradores cadastrados</div>
+  </div>
+</div>
+
+<div id="app">
+  <header class="apphdr">
+    <div class="alogo">
+      <div class="aicon"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+      <div class="atxt"><strong>Ouro Verde</strong>Portal do Morador</div>
+    </div>
+    <div class="uinfo">
+      <div class="udet"><div class="uname" id="hdr-nome">—</div><div class="uapto" id="hdr-apto">—</div></div>
+      <div class="avatar" id="hdr-av">?</div>
+      <button class="btnsair" onclick="sair()">Sair</button>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tabbtn active" onclick="switchTab('recibos',this)">📋 Meus Recibos</button>
+    <button class="tabbtn" onclick="switchTab('mural',this)">📢 Mural de Avisos</button>
+  </div>
+
+  <div class="tabcnt active" id="tab-recibos">
+    <div class="filterbar">
+      <div><label>Mês</label>
+        <select id="f-mes">
+          <option value="">Todos</option>
+          <option>Janeiro</option><option>Fevereiro</option><option>Março</option>
+          <option>Abril</option><option>Maio</option><option>Junho</option>
+          <option>Julho</option><option>Agosto</option><option>Setembro</option>
+          <option>Outubro</option><option>Novembro</option><option>Dezembro</option>
+        </select>
+      </div>
+      <div><label>Ano</label>
+        <select id="f-ano">
+          <option value="">Todos</option>
+          <option>2024</option><option>2025</option><option>2026</option><option>2027</option>
+        </select>
+      </div>
+      <div class="fbtns">
+        <button class="btnfil" onclick="renderRecibos()">🔍 Filtrar</button>
+        <button class="btnlim" onclick="limparFiltros()">✕ Limpar</button>
+      </div>
+    </div>
+    <div class="rcount" id="rcount"></div>
+    <div id="lista-rec"><div class="loading">🔄 Carregando comprovantes...</div></div>
+  </div>
+
+  <div class="tabcnt" id="tab-mural">
+    <div id="lista-av"><div class="loading">🔄 Carregando avisos...</div></div>
+  </div>
+</div>
+
+<div class="movl" id="modal-rec">
+  <div class="modal">
+    <button class="mclose" onclick="fecharModal()">✕</button>
+    <div class="mbody">
+      <h3 style="margin-bottom:.75rem;font-size:1rem;color:#071510">Comprovante de Pagamento</h3>
+      <div class="fmtrow">
+        <button class="fmtbtn active" onclick="setFmt('pdf',this)">PDF</button>
+        <button class="fmtbtn" onclick="setFmt('png',this)">PNG</button>
+        <button class="fmtbtn" onclick="setFmt('jpeg',this)">JPEG</button>
+      </div>
+      <div id="rec-preview"></div>
+      <div class="macts">
+        <button class="btndl" onclick="baixarRecibo()">⬇ Baixar Comprovante</button>
+        <button class="btncan" onclick="fecharModal()">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ FIREBASE CONFIG ═══
+const FB_PROJECT = 'ouroverde2702';
+const FB_APIKEY  = 'AIzaSyA81ZwdCjWf0QKhF1F-wQ7ROoPKM85QBng';
+
+function fbUrl(col){
+  return 'https://firestore.googleapis.com/v1/projects/'+FB_PROJECT
+    +'/databases/(default)/documents/'+col+'/data?key='+FB_APIKEY;
+}
+async function fbLoad(col){
+  try{
+    const r=await fetch(fbUrl(col));
+    if(!r.ok) throw new Error('HTTP '+r.status+' ao carregar '+col);
+    const j=await r.json();
+    const sv=j.fields&&j.fields.items&&j.fields.items.stringValue;
+    if(sv) return JSON.parse(sv);
+    return [];
+  }catch(e){
+    console.warn('fbLoad '+col+':',e.message);
+    try{return JSON.parse(localStorage.getItem('ov_'+col)||'[]')}catch(_){return[]}
+  }
+}
+
+// ═══ ESTADO ═══
+let REC=[],AV=[],MOR=[];
+let logApto=null,logMor=null,fmtAtual='pdf',recAtual=null;
+
+// ═══ UTILS ═══
+function fd(d){return d?new Date(d+'T12:00:00').toLocaleDateString('pt-BR'):'—'}
+function fv(v){const n=parseFloat(v)||0;return 'R$ '+n.toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.')}
+function toast(msg,tipo){
+  const el=document.createElement('div');
+  el.className='toast'+(tipo==='err'?' err':'');
+  el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),3000);
+}
+function toggleSenha(){
+  const el=document.getElementById('inp-senha');
+  el.type=el.type==='password'?'text':'password';
+}
+function normMes(m){
+  if(!m)return'';
+  const mp={'janeiro':'Janeiro','fevereiro':'Fevereiro','marco':'Março','março':'Março','abril':'Abril',
+    'maio':'Maio','junho':'Junho','julho':'Julho','agosto':'Agosto','setembro':'Setembro',
+    'outubro':'Outubro','novembro':'Novembro','dezembro':'Dezembro','jan':'Janeiro','fev':'Fevereiro',
+    'mar':'Março','abr':'Abril','mai':'Maio','jun':'Junho','jul':'Julho','ago':'Agosto',
+    'set':'Setembro','out':'Outubro','nov':'Novembro','dez':'Dezembro'};
+  const s=m.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').split('/')[0].trim();
+  return mp[s]||m;
+}
+function normAno(r){
+  if(r.ano&&String(r.ano).match(/^\d{4}$/))return String(r.ano);
+  if(r.mes&&r.mes.includes('/'))return r.mes.split('/').pop().trim();
+  if(r.dataPagto&&String(r.dataPagto).match(/^\d{4}-/))return String(r.dataPagto).substring(0,4);
+  return'';
+}
+
+// ═══ LOGIN ═══
+async function fazerLogin(){
+  const apto=(document.getElementById('inp-apto').value||'').trim();
+  const senha=document.getElementById('inp-senha').value||'';
+  const err=document.getElementById('errmsg');
+  const btn=document.getElementById('btn-login');
+  if(!apto||!senha){err.textContent='Preencha todos os campos.';return}
+  btn.disabled=true;btn.textContent='🔄 Carregando...';err.textContent='';
+  try{
+    [MOR,REC,AV]=await Promise.all([fbLoad('moradores'),fbLoad('recibos'),fbLoad('avisos')]);
+  }catch(e){
+    btn.disabled=false;btn.textContent='Acessar Minha Conta';
+    err.textContent='Erro de conexão. Tente novamente.';return;
+  }
+  btn.disabled=false;btn.textContent='Acessar Minha Conta';
+  const m=MOR.find(x=>String(x.apto||'').trim()===apto&&x.senha===senha);
+  if(!m){
+    err.textContent='Apartamento ou senha incorretos.';
+    localStorage.setItem('ov_login_erro',JSON.stringify({apto,hora:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}),ts:Date.now()}));
+    return;
+  }
+  logApto=apto;logMor=m;
+  if(document.getElementById('lembrar').checked)
+    localStorage.setItem('ov_sess2',JSON.stringify({apto,senha}));
+  entrarApp(m);
+}
+
+function entrarApp(m){
+  document.getElementById('login-screen').style.display='none';
+  const app=document.getElementById('app');
+  app.style.display='flex';app.style.flexDirection='column';
+  document.getElementById('hdr-nome').textContent=m.nome||'Morador';
+  document.getElementById('hdr-apto').textContent='Apt. '+m.apto;
+  document.getElementById('hdr-av').textContent=(m.nome||'M').charAt(0).toUpperCase();
+  renderRecibos();renderAvisos();
+}
+
+async function tryAutoLogin(){
+  const s=localStorage.getItem('ov_sess2');
+  if(!s)return false;
+  try{
+    const{apto,senha}=JSON.parse(s);
+    if(!apto||!senha)return false;
+    [MOR,REC,AV]=await Promise.all([fbLoad('moradores'),fbLoad('recibos'),fbLoad('avisos')]);
+    const m=MOR.find(x=>String(x.apto||'').trim()===apto&&x.senha===senha);
+    if(m){logApto=apto;logMor=m;entrarApp(m);return true;}
+  }catch(e){}
+  localStorage.removeItem('ov_sess2');return false;
+}
+
+// ═══ RECIBOS ═══
+function renderRecibos(){
+  if(!logApto)return;
+  const mes=document.getElementById('f-mes').value;
+  const ano=document.getElementById('f-ano').value;
+  let lista=REC.filter(x=>String(x.apto||'').trim()===logApto);
+  if(mes)lista=lista.filter(x=>normMes(x.mes)===mes);
+  if(ano)lista=lista.filter(x=>normAno(x)===ano);
+  lista.sort((a,b)=>{
+    const da=a.dataPagto||'',db=b.dataPagto||'';
+    if(da&&db)return db>da?1:-1;
+    const ya=normAno(a)||'0',yb=normAno(b)||'0';
+    if(ya!==yb)return yb>ya?1:-1;
+    const ord=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    return ord.indexOf(normMes(b.mes))-ord.indexOf(normMes(a.mes));
+  });
+  document.getElementById('rcount').textContent=lista.length+' comprovante'+(lista.length!==1?'s':'')+(mes||ano?' (filtrado)':'');
+  const el=document.getElementById('lista-rec');
+  if(!lista.length){
+    const tot=REC.filter(x=>String(x.apto||'').trim()===logApto).length;
+    el.innerHTML='<div class="empty"><div class="ei">'+(REC.length===0?'🔌':'📋')+'</div><p>'+(
+      REC.length===0?'Não foi possível carregar os dados.<br><small>Verifique a conexão com o Firebase.</small>':
+      mes||ano?'Nenhum comprovante para o período selecionado.<br><small>Tente limpar os filtros.</small>':
+      tot===0?'Você ainda não possui recibos registrados.<br><small>Os comprovantes aparecem aqui após o registro pelo síndico.</small>':
+      'Nenhum resultado encontrado.')+'</p></div>';
+    return;
+  }
+  el.innerHTML=lista.map(x=>{
+    const m_=normMes(x.mes),a_=normAno(x),fr=x.forma||'';
+    const isA=fr.toLowerCase().includes('abatimento'),isM=fr.toLowerCase().includes('melhoria'),isAc=fr.toLowerCase().includes('acerto');
+    const cor=isA||isM?'#E8A63A':isAc?'#5DADE2':'var(--green)';
+    const lbl=isA?'🔧 Abatimento':isM?'🔨 Melhoria':isAc?'📅 Acerto':'✅ Pago';
+    return '<div class="rcard" style="border-left-color:'+cor+'">'+
+      '<div class="rchead">'+
+        '<span class="rcper">📅 '+m_+(a_?' / '+a_:'')+'</span>'+
+        '<span class="rcst" style="background:'+cor+'22;color:'+cor+'">'+lbl+'</span>'+
+      '</div>'+
+      '<div class="rcfields">'+
+        '<div class="rcf"><label>Valor</label><div class="v vval">'+fv(x.valor)+'</div></div>'+
+        '<div class="rcf"><label>Pagamento</label><div class="v">'+fd(x.dataPagto)+'</div></div>'+
+        '<div class="rcf"><label>Forma</label><div class="v">'+fr+'</div></div>'+
+        (x.descricao&&x.descricao!=='Taxa condominial'?'<div class="rcf"><label>Descrição</label><div class="v" style="font-size:.78rem">'+x.descricao+'</div></div>':'')+
+      '</div>'+
+      '<div class="rcacts">'+
+        '<button class="btnver" onclick="verRec(\''+x.id+'\')">👁 Ver</button>'+
+        '<button class="btnbx" onclick="verRec(\''+x.id+'\',true)">⬇ Baixar</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+function limparFiltros(){
+  document.getElementById('f-mes').value='';
+  document.getElementById('f-ano').value='';
+  renderRecibos();
+}
+
+// ═══ AVISOS ═══
+function renderAvisos(){
+  const el=document.getElementById('lista-av');
+  const hoje=new Date();
+  const lista=AV.filter(a=>{
+    if(a.expira&&new Date(a.expira+'T23:59:59')<hoje)return false;
+    if(a.dest==='individual'&&a.aptoDest&&String(a.aptoDest).trim()!==logApto)return false;
+    return true;
+  }).sort((a,b)=>(b.id||'')>(a.id||'')?1:-1);
+  if(!lista.length){el.innerHTML='<div class="empty"><div class="ei">📢</div><p>Nenhum aviso no momento.</p></div>';return}
+  const ic={urgente:'🔴',importante:'🟡',informativo:'🟢',lembrete:'🔵'};
+  el.innerHTML=lista.map(a=>{
+    const t=a.tipo||'informativo';
+    return '<div class="avcard">'+
+      '<div class="avhead"><span class="avtipo av-'+t+'">'+ic[t]+' '+t+'</span><span class="avtit">'+a.titulo+'</span></div>'+
+      '<div class="avbody">'+(a.corpo||a.body||'')+'</div>'+
+      (a.expira?'<div class="avfoot">⏳ Válido até '+fd(a.expira)+'</div>':'')+
+    '</div>';
+  }).join('');
+}
+
+// ═══ VER / BAIXAR RECIBO ═══
+function verRec(id,autoDown=false){
+  const r=REC.find(x=>x.id===id);
+  if(!r||String(r.apto||'').trim()!==logApto)return;
+  recAtual=r;
+  document.getElementById('rec-preview').innerHTML=buildRP(r);
+  if(autoDown){setTimeout(()=>baixarRecibo(),300);}
+  else{document.getElementById('modal-rec').classList.add('open');}
+}
+function buildRP(d){
+  const m_=normMes(d.mes),a_=normAno(d);
+  return '<div class="rp" id="rp-exp">'+
+    '<div class="rphdr"><h2>CONDOMÍNIO OURO VERDE</h2><p>Recibo de Pagamento</p></div>'+
+    '<div class="rprow"><span class="lb">Apartamento</span><span class="vl">'+d.apto+'</span></div>'+
+    '<div class="rprow"><span class="lb">Morador</span><span class="vl">'+(d.nome||'—')+'</span></div>'+
+    '<div class="rprow"><span class="lb">Telefone</span><span class="vl">'+(d.telefone||'—')+'</span></div>'+
+    '<div class="rprow"><span class="lb">Competência</span><span class="vl">'+m_+(a_?' / '+a_:'')+'</span></div>'+
+    '<div class="rprow"><span class="lb">Data Pagamento</span><span class="vl">'+fd(d.dataPagto)+'</span></div>'+
+    '<div class="rprow"><span class="lb">Forma</span><span class="vl">'+(d.forma||'—')+'</span></div>'+
+    (d.descricao?'<div class="rprow"><span class="lb">Descrição</span><span class="vl">'+d.descricao+'</span></div>':'')+
+    '<div class="rpval"><span class="lb">Valor Pago</span><span class="vl">'+fv(d.valor)+'</span></div>'+
+    '<div class="rprow"><span class="lb">Emissão</span><span class="vl">'+(d.dataEmissao||new Date().toLocaleDateString('pt-BR'))+'</span></div>'+
+    '<div class="rpfoot"><strong>Paulo Sergio de Oliveira</strong><br>(31) 9 7575-9878<br><span style="font-size:.7rem;color:#999">Síndico — Condomínio Ouro Verde</span></div>'+
+  '</div>';
+}
+function setFmt(f,btn){fmtAtual=f;document.querySelectorAll('.fmtbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+function fecharModal(){document.getElementById('modal-rec').classList.remove('open')}
+async function baixarRecibo(){
+  if(!recAtual)return;
+  toast('Gerando arquivo...');
+  const fn='recibo_apt'+recAtual.apto+'_'+normMes(recAtual.mes)+(normAno(recAtual)?'_'+normAno(recAtual):'');
+  const hid=document.createElement('div');
+  hid.style.cssText='position:fixed;left:-9999px;top:0;width:480px;background:#fff;z-index:-1';
+  hid.innerHTML=buildRP(recAtual);document.body.appendChild(hid);
+  const el=hid.querySelector('#rp-exp');
+  await new Promise(r=>setTimeout(r,200));
+  try{
+    const canvas=await html2canvas(el,{scale:2,useCORS:true,backgroundColor:'#ffffff',width:el.scrollWidth,height:el.scrollHeight,windowWidth:el.scrollWidth,windowHeight:el.scrollHeight,x:0,y:0,scrollX:0,scrollY:0});
+    if(fmtAtual==='pdf'){
+      const{jsPDF}=window.jspdf;const pdf=new jsPDF('p','mm','a4');
+      const pw=pdf.internal.pageSize.getWidth(),ph=pdf.internal.pageSize.getHeight();
+      const ih=(canvas.height*pw)/canvas.width;let y=0;
+      while(y<ih){if(y>0)pdf.addPage();pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,-y,pw,ih);y+=ph;}
+      pdf.save(fn+'.pdf');
+    }else{
+      const t=fmtAtual==='jpeg'?'image/jpeg':'image/png';
+      const a=document.createElement('a');a.download=fn+(fmtAtual==='jpeg'?'.jpg':'.png');
+      a.href=canvas.toDataURL(t,.95);a.click();
+    }
+    toast('Arquivo salvo! ✅');
+  }catch(e){toast('Erro ao gerar arquivo.','err');console.error(e);}
+  document.body.removeChild(hid);fecharModal();
+}
+
+// ═══ TABS ═══
+function switchTab(tab,btn){
+  document.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tabcnt').forEach(c=>c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='recibos')renderRecibos();
+  if(tab==='mural')renderAvisos();
+}
+
+// ═══ SAIR ═══
+function sair(){
+  logApto=null;logMor=null;REC=[];AV=[];MOR=[];
+  localStorage.removeItem('ov_sess2');
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('inp-apto').value='';
+  document.getElementById('inp-senha').value='';
+  document.getElementById('errmsg').textContent='';
+}
+
+document.getElementById('modal-rec').addEventListener('click',function(e){if(e.target===this)fecharModal()});
+
+// ═══ INIT ═══
+window.addEventListener('DOMContentLoaded',async()=>{
+  const ok=await tryAutoLogin();
+  if(!ok)document.getElementById('login-screen').style.display='flex';
+});
+</script>
+</body>
+</html>
